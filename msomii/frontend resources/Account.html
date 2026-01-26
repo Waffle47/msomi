@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account</title>
+    <style>
+        /* Existing styles unchanged */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-image: url(accountcreate.png);
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 40px 30px;
+            background-color: rgba(92, 122, 121, 0.6);
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .section:last-child {
+            border-bottom: none;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input[type="password"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .back-button {
+            background: transparent;
+            color: #f9f9ff;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 20px;
+            margin-left: auto;
+            margin-top: 3px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .danger-btn {
+            background-color: #e74c3c;
+        }
+        .danger-btn:hover {
+            background-color: #c0392b;
+        }
+        .content-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .content-title {
+            font-weight: 600;
+        }
+        .content-date {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        .error {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <a href="homepage.html" id="backButton" class="back-button"><svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px" fill="#FFFFFF"><path d="M560.67-240 320-480.67l240.67-240.66L608-674 414.67-480.67 608-287.33 560.67-240Z"/></svg></a>
+    <div class="container">
+        <h1>Account Settings</h1>
+        <div class="section">
+            <h2>Change Password</h2>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" name="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" name="newPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                <div class="error" id="passwordError"></div>
+                <button type="submit">Update Password</button>
+            </form>
+        </div>
+        <div class="section">
+            <h2>My Uploaded Content</h2>
+            <div id="contentList"></div>
+        </div>
+        <div class="section">
+            <h2>Account Deletion</h2>
+            <p>Warning: Deleting your account is permanent and cannot be undone. All your data will be removed from our servers.</p>
+            <button id="deleteAccountBtn" class="danger-btn">Delete My Account</button>
+        </div>
+    </div>
+    <div id="deleteContentModal" class="confirmation-modal">
+        <div class="modal-content">
+            <h3>Delete Content</h3>
+            <p>Are you sure you want to delete this content? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button id="cancelDeleteContent">Cancel</button>
+                <button id="confirmDeleteContent" class="danger-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+    <div id="deleteAccountModal" class="confirmation-modal">
+        <div class="modal-content">
+            <h3>Delete Account</h3>
+            <p>This will permanently delete your account and all associated data. Are you sure?</p>
+            <div class="form-group">
+                <label for="deleteAccountPassword">Enter your password to confirm:</label>
+                <input type="password" id="deleteAccountPassword" required>
+            </div>
+            <div class="error" id="deleteAccountError"></div>
+            <div class="modal-actions">
+                <button id="cancelDeleteAccount">Cancel</button>
+                <button id="confirmDeleteAccount" class="danger-btn">Delete Account</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const getCsrfToken = async () => {
+                const response = await fetch('http://localhost:5000/api/csrf-token', { credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to fetch CSRF token');
+                const { csrfToken } = await response.json();
+                return csrfToken;
+            };
+
+            const loadContent = async () => {
+                try {
+                    const response = await fetch('http://localhost:5000/api/resources', { credentials: 'include' });
+                    const { data } = await response.json();
+                    const contentList = document.getElementById('contentList');
+                    contentList.innerHTML = '';
+                    if (data.length === 0) {
+                        contentList.innerHTML = '<p>No content uploaded.</p>';
+                        return;
+                    }
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'content-item';
+                        div.innerHTML = `
+                            <div>
+                                <div class="content-title">${item.title}</div>
+                                <div class="content-date">Uploaded: ${new Date(item.createdAt).toLocaleDateString()}</div>
+                            </div>
+                            <button class="danger-btn delete-content-btn" data-id="${item._id}">Delete</button>
+                        `;
+                        contentList.appendChild(div);
+                    });
+                } catch (error) {
+                    document.getElementById('contentList').innerHTML = '<p>Error loading content.</p>';
+                }
+            };
+
+            const deleteContentButtons = document.querySelectorAll('.delete-content-btn');
+            const deleteContentModal = document.getElementById('deleteContentModal');
+            const cancelDeleteContent = document.getElementById('cancelDeleteContent');
+            const confirmDeleteContent = document.getElementById('confirmDeleteContent');
+            let contentToDelete = null;
+
+            deleteContentButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    contentToDelete = this.getAttribute('data-id');
+                    deleteContentModal.style.display = 'flex';
+                });
+            });
+
+            cancelDeleteContent.addEventListener('click', () => {
+                deleteContentModal.style.display = 'none';
+                contentToDelete = null;
+            });
+
+            confirmDeleteContent.addEventListener('click', async () => {
+                if (!contentToDelete) return;
+                try {
+                    const csrfToken = await getCsrfToken();
+                    const response = await fetch(`http://localhost:5000/api/resources/${contentToDelete}`, {
+                        method: 'DELETE',
+                        headers: { 'CSRF-Token': csrfToken },
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        alert('Content deleted successfully');
+                        deleteContentModal.style.display = 'none';
+                        contentToDelete = null;
+                        await loadContent();
+                    } else {
+                        const data = await response.json();
+                        alert(data.error || 'Failed to delete content');
+                    }
+                } catch (error) {
+                    alert('Error deleting content: ' + error.message);
+                }
+            });
+
+            const changePasswordForm = document.getElementById('changePasswordForm');
+            changePasswordForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const passwordError = document.getElementById('passwordError');
+
+                if (newPassword !== confirmPassword) {
+                    passwordError.textContent = 'New passwords do not match';
+                    return;
+                }
+                if (newPassword.length < 6) {
+                    passwordError.textContent = 'New password must be at least 6 characters';
+                    return;
+                }
+
+                try {
+                    const csrfToken = await getCsrfToken();
+                    const response = await fetch('http://localhost:5000/api/auth/change-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'CSRF-Token': csrfToken
+                        },
+                        body: JSON.stringify({ currentPassword, newPassword }),
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        alert('Password changed successfully');
+                        changePasswordForm.reset();
+                        passwordError.textContent = '';
+                    } else {
+                        passwordError.textContent = data.error || 'Failed to change password';
+                    }
+                } catch (error) {
+                    passwordError.textContent = 'Error changing password: ' + error.message;
+                }
+            });
+
+            const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+            const deleteAccountModal = document.getElementById('deleteAccountModal');
+            const cancelDeleteAccount = document.getElementById('cancelDeleteAccount');
+            const confirmDeleteAccount = document.getElementById('confirmDeleteAccount');
+            const deleteAccountError = document.getElementById('deleteAccountError');
+
+            deleteAccountBtn.addEventListener('click', () => {
+                deleteAccountModal.style.display = 'flex';
+            });
+
+            cancelDeleteAccount.addEventListener('click', () => {
+                deleteAccountModal.style.display = 'none';
+            });
+
+            confirmDeleteAccount.addEventListener('click', async () => {
+                const password = document.getElementById('deleteAccountPassword').value;
+                if (!password) {
+                    deleteAccountError.textContent = 'Please enter your password';
+                    return;
+                }
+                try {
+                    const csrfToken = await getCsrfToken();
+                    const response = await fetch('http://localhost:5000/api/auth/delete-account', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'CSRF-Token': csrfToken
+                        },
+                        body: JSON.stringify({ password }),
+                        credentials: 'include'
+                    });
+                    if (response.ok) {
+                        alert('Account deleted successfully');
+                        window.location.href = 'LoginPage.html';
+                    } else {
+                        const data = await response.json();
+                        deleteAccountError.textContent = data.error || 'Failed to delete account';
+                    }
+                } catch (error) {
+                    deleteAccountError.textContent = 'Error deleting account: ' + error.message;
+                }
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === deleteContentModal) {
+                    deleteContentModal.style.display = 'none';
+                    contentToDelete = null;
+                }
+                if (e.target === deleteAccountModal) {
+                    deleteAccountModal.style.display = 'none';
+                }
+            });
+
+            await loadContent();
+        });
+    </script>
+</body>
+</html>
